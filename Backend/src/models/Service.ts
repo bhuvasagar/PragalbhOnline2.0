@@ -6,13 +6,17 @@ export interface IService extends Document {
   title: {
     EN: string;
     GU: string;
+    HI?: string;
   };
   description: {
     EN: string;
     GU: string;
+    HI?: string;
   };
   documents: {
     EN: string[];
+    GU: string[];
+    HI?: string[];
   };
 }
 
