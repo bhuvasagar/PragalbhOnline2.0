@@ -26,12 +26,15 @@ const ServiceSchema: Schema = new Schema(
     },
     title: {
       EN: { type: String, required: true },
+      GU: { type: String, required: false },
     },
     description: {
       EN: { type: String, required: true },
+      GU: { type: String, required: false },
     },
     documents: {
       EN: [{ type: String }],
+      GU: [{ type: String }],
     },
   },
   { timestamps: true }
