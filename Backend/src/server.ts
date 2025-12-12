@@ -42,6 +42,16 @@ app.get("/", (req, res) => {
   res.send("Pragalbh Services Backend is running");
 });
 
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Global Error Handler:", err);
+  res.status(500).json({
+    message: "Global Server Error",
+    error: err.message,
+    stack: process.env.NODE_ENV === "production" ? "🥞" : err.stack,
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {

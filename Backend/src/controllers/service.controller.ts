@@ -45,6 +45,7 @@ export const createService = async (req: AuthRequest, res: Response) => {
       .json({
         message: "Server error",
         error: error.message,
+        errors: error,
         stack: error.stack,
       });
   }
