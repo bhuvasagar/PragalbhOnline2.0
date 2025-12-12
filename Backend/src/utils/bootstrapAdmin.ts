@@ -1,6 +1,7 @@
 import Admin from "../models/Admin";
 
 export const ensureAdmin = async () => {
+  console.log("Entering ensureAdmin function...");
   try {
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPassword = process.env.ADMIN_PASSWORD;
