@@ -1,0 +1,4 @@
+components/AddServiceModal.tsx(38,17): error TS2353: Object literal may only specify known properties, and 'HI' does not exist in type '{ EN: string; GU: string; }'.
+components/AddServiceModal.tsx(43,17): error TS2353: Object literal may only specify known properties, and 'HI' does not exist in type '{ EN: string; GU: string; }'.
+components/AddServiceModal.tsx(49,17): error TS2353: Object literal may only specify known properties, and 'HI' does not exist in type '{ EN: string[]; GU: string[]; }'.
+components/admin/ApplicationDetailsModal.tsx(17,41): error TS2304: Cannot find name 'ApplicationDetailsModalProps'.

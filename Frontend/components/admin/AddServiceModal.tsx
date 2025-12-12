@@ -17,6 +17,15 @@ const LANGUAGES: { key: LanguageKey; label: string }[] = [
   { key: "GU", label: "Gujarati" },
 ];
 
+interface ServiceFormData {
+  title: { EN: string; GU: string };
+  description: { EN: string; GU: string };
+  documents: { EN: string[]; GU: string[] };
+  category: string;
+  price: string;
+  iconName: string;
+}
+
 const AddServiceModal: React.FC<
   AddServiceModalProps & { serviceToEdit?: any }
 > = ({ isOpen, onClose, onSuccess, serviceToEdit }) => {
@@ -26,7 +35,7 @@ const AddServiceModal: React.FC<
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ServiceFormData>({
     title: { EN: "", GU: "" },
     description: { EN: "", GU: "" },
     documents: { EN: [""], GU: [""] },
