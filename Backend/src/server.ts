@@ -4,6 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import connectDB from "./config/database";
+import { ensureAdmin } from "./utils/bootstrapAdmin";
 
 dotenv.config();
 
@@ -11,7 +12,12 @@ const app = express();
 export { app };
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "*", // Default to * for dev if not set
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
@@ -43,6 +49,7 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     await connectDB();
+    await ensureAdmin();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
