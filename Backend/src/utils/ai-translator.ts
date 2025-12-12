@@ -15,12 +15,17 @@ interface ServiceData {
 const translateText = async (text: string, target: string): Promise<string> => {
   if (!text) return "";
   try {
-    const response = await axios.post("https://libretranslate.de/translate", {
-      q: text,
-      source: "auto",
-      target: target,
-      format: "text",
-    });
+    const response = await axios.post(
+      "https://de.libretranslate.com/translate",
+      {
+        q: text,
+        source: "auto",
+        target: target,
+        format: "text",
+        alternatives: 3,
+        api_key: "",
+      }
+    );
     return response.data.translatedText;
   } catch (error) {
     console.error(`Translation failed for "${text}" to ${target}:`, error);
