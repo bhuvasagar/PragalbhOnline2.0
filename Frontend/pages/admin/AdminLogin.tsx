@@ -229,11 +229,18 @@ const AdminLogin: React.FC = () => {
             </div>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-            <p className="text-xs text-slate-400">
-              © 2024 Legal Associates & Xerox Services. <br />
-              Authorized personnel only.
             </p>
+          </div>
+          
+          {/* DEBUG SECTION */}
+          <div className="mt-4 p-4 bg-red-100 text-red-800 rounded text-xs overflow-auto">
+            <p className="font-bold">DEBUG INFO (Remove in Prod):</p>
+            <p>Typed User: {username}</p>
+            <p>Typed Pass: {password}</p>
+            <p>Backend URL: {api.defaults.baseURL}</p>
+            <p>VITE_API_BASE_URL: {import.meta.env.VITE_API_BASE_URL}</p>
+            {/* Frontend cannot see ADMIN_EMAIL unless prefixed with VITE_ */}
+            <p>VITE_ADMIN_EMAIL: {import.meta.env.VITE_ADMIN_EMAIL || "Not set"}</p>
           </div>
         </div>
       </div>
