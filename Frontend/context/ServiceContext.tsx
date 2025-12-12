@@ -39,6 +39,7 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({
           "pragalbh_services_data",
           JSON.stringify(mappedData)
         );
+        setIsLoading(false);
         return;
       } catch (error) {
         console.error(

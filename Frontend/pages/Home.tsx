@@ -46,7 +46,7 @@ const Counter = ({
 
 const Home: React.FC = () => {
   const { language, t } = useLanguage();
-  const { services } = useServices();
+  const { services, isLoading: isServicesLoading } = useServices();
 
   const featuredServices = services.slice(0, 4);
 
@@ -66,13 +66,16 @@ const Home: React.FC = () => {
   };
 
   const [stats, setStats] = React.useState<any[]>([]);
+  const [isStatsLoading, setIsStatsLoading] = React.useState(true);
 
   useEffect(() => {
     const fetchData = async (retries = 3, delay = 1000) => {
+      setIsStatsLoading(true);
       for (let i = 0; i < retries; i++) {
         try {
           const statsRes = await api.get("/stats");
           setStats(statsRes.data);
+          setIsStatsLoading(false);
           return;
         } catch (error) {
           console.error(
@@ -84,6 +87,7 @@ const Home: React.FC = () => {
           }
         }
       }
+      setIsStatsLoading(false);
     };
     fetchData();
   }, []);
@@ -139,37 +143,49 @@ const Home: React.FC = () => {
       <section className="bg-white dark:bg-slate-800 py-12 border-b border-slate-100 dark:border-slate-700">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            {stats.map((stat) => {
-              const Icon =
-                stat.iconName === "Users"
-                  ? Users
-                  : stat.iconName === "Calendar"
-                  ? Calendar
-                  : Briefcase;
-              return (
-                <motion.div
-                  key={stat.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  className="p-6"
-                >
-                  <div className="w-12 h-12 mx-auto bg-primary-50 rounded-full flex items-center justify-center text-primary-600 mb-4">
-                    <Icon size={24} />
+            {isStatsLoading
+              ? [1, 2, 3].map((i) => (
+                  <div key={i} className="p-6 animate-pulse">
+                    <div className="w-12 h-12 mx-auto bg-slate-200 dark:bg-slate-700 rounded-full mb-4" />
+                    <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-16 mx-auto mb-2" />
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mx-auto" />
                   </div>
-                  <h3 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-                    {typeof stat.value === "number" ? (
-                      <Counter from={0} to={stat.value} suffix={stat.suffix} />
-                    ) : (
-                      stat.value
-                    )}
-                  </h3>
-                  <p className="text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide text-sm">
-                    {stat.label[language] || stat.label["EN"]}
-                  </p>
-                </motion.div>
-              );
-            })}
+                ))
+              : stats.map((stat) => {
+                  const Icon =
+                    stat.iconName === "Users"
+                      ? Users
+                      : stat.iconName === "Calendar"
+                      ? Calendar
+                      : Briefcase;
+                  return (
+                    <motion.div
+                      key={stat.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      className="p-6"
+                    >
+                      <div className="w-12 h-12 mx-auto bg-primary-50 rounded-full flex items-center justify-center text-primary-600 mb-4">
+                        <Icon size={24} />
+                      </div>
+                      <h3 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                        {typeof stat.value === "number" ? (
+                          <Counter
+                            from={0}
+                            to={stat.value}
+                            suffix={stat.suffix}
+                          />
+                        ) : (
+                          stat.value
+                        )}
+                      </h3>
+                      <p className="text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide text-sm">
+                        {stat.label[language] || stat.label["EN"]}
+                      </p>
+                    </motion.div>
+                  );
+                })}
           </div>
         </div>
       </section>
@@ -202,11 +218,26 @@ const Home: React.FC = () => {
             viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           >
-            {featuredServices.map((service) => (
-              <motion.div key={service.id} variants={itemVariants}>
-                <ServiceCard service={service} />
-              </motion.div>
-            ))}
+            {isServicesLoading
+              ? [1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-white dark:bg-slate-800 rounded-2xl p-6 h-80 animate-pulse border border-slate-100 dark:border-slate-800"
+                  >
+                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-xl mb-4" />
+                    <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-4" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6" />
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-4/6" />
+                    </div>
+                  </div>
+                ))
+              : featuredServices.map((service) => (
+                  <motion.div key={service.id} variants={itemVariants}>
+                    <ServiceCard service={service} />
+                  </motion.div>
+                ))}
           </motion.div>
 
           <div className="mt-8 text-center md:hidden">

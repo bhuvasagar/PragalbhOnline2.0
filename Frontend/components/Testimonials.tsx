@@ -9,6 +9,7 @@ const Testimonials: React.FC = () => {
   const { language, t } = useLanguage();
   const { showToast } = useToast();
   const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,10 +28,12 @@ const Testimonials: React.FC = () => {
   }, []);
 
   const fetchReviews = async (retries = 3, delay = 1000) => {
+    setIsLoading(true);
     for (let i = 0; i < retries; i++) {
       try {
         const { data } = await api.get("/reviews");
         setReviews(data);
+        setIsLoading(false);
         return;
       } catch (error) {
         console.error(
@@ -44,6 +47,7 @@ const Testimonials: React.FC = () => {
         }
       }
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -122,35 +126,64 @@ const Testimonials: React.FC = () => {
           <div className="relative w-full overflow-hidden">
             {/* Slide Container */}
             <div className="flex animate-scroll w-fit">
-              {displayReviews.map((item, index) => (
-                <div
-                  key={`${item._id}-${index}`}
-                  className="w-[85vw] md:w-[33.33vw] lg:w-[25vw] flex-shrink-0 px-2 md:px-4"
-                >
-                  <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 relative shadow-md h-full flex flex-col hover:shadow-lg transition-shadow">
-                    <div className="text-slate-200 dark:text-slate-700 mb-4 absolute top-4 right-6">
-                      <MessageSquare size={32} className="opacity-20" />
-                    </div>
+              {isLoading
+                ? Array(6)
+                    .fill(0)
+                    .map((_, index) => (
+                      <div
+                        key={`skeleton-${index}`}
+                        className="w-[85vw] md:w-[33.33vw] lg:w-[25vw] flex-shrink-0 px-2 md:px-4"
+                      >
+                        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 relative shadow-md h-64 animate-pulse">
+                          <div className="flex gap-1 mb-4">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <div
+                                key={s}
+                                className="w-4 h-4 bg-slate-200 dark:bg-slate-700 rounded-full"
+                              />
+                            ))}
+                          </div>
+                          <div className="space-y-2 mb-6">
+                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6" />
+                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-4/6" />
+                          </div>
+                          <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-2" />
+                            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                : displayReviews.map((item, index) => (
+                    <div
+                      key={`${item._id}-${index}`}
+                      className="w-[85vw] md:w-[33.33vw] lg:w-[25vw] flex-shrink-0 px-2 md:px-4"
+                    >
+                      <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-slate-700 relative shadow-md h-full flex flex-col hover:shadow-lg transition-shadow">
+                        <div className="text-slate-200 dark:text-slate-700 mb-4 absolute top-4 right-6">
+                          <MessageSquare size={32} className="opacity-20" />
+                        </div>
 
-                    <div className="mb-4">
-                      <StarRating rating={item.rating} readOnly size={18} />
-                    </div>
+                        <div className="mb-4">
+                          <StarRating rating={item.rating} readOnly size={18} />
+                        </div>
 
-                    <p className="text-slate-600 dark:text-slate-300 italic mb-6 leading-relaxed flex-grow">
-                      "{item.content}"
-                    </p>
+                        <p className="text-slate-600 dark:text-slate-300 italic mb-6 leading-relaxed flex-grow">
+                          "{item.content}"
+                        </p>
 
-                    <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
-                      <h4 className="font-bold text-slate-900 dark:text-white mb-1 truncate">
-                        {item.name}
-                      </h4>
-                      <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </span>
+                        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
+                          <h4 className="font-bold text-slate-900 dark:text-white mb-1 truncate">
+                            {item.name}
+                          </h4>
+                          <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
+                            {new Date(item.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  ))}
             </div>
           </div>
         )}
