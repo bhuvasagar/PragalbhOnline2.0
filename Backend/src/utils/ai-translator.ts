@@ -2,9 +2,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// LibreTranslate endpoint
-// Note: libretranslate.de is a public instance and might have rate limits.
-const LIBRE_TRANSLATE_URL = "https://libretranslate.de/translate";
+// LibreTranslate endpoints (Mirrors)
+const LIBRE_TRANSLATE_MIRRORS = [
+  "https://libretranslate.de/translate",
+  "https://translate.terraprint.co/translate",
+  "https://lt.vern.cc/translate",
+  "https://translate.argosopentech.com/translate",
+];
 
 interface ServiceData {
   title: Record<string, string>;
@@ -27,41 +31,50 @@ const translateBatch = async (
   source: string,
   target: string
 ): Promise<string[]> => {
-  try {
-    const response = await fetch(LIBRE_TRANSLATE_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        q: texts,
-        source: langMap[source] || source.toLowerCase(),
-        target: langMap[target] || target.toLowerCase(),
-        format: "text",
-        api_key: "", // Free usage, potentially rate limited
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
+  let lastError: any;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `LibreTranslate API Error: ${response.status} ${errorText}`
-      );
+  for (const url of LIBRE_TRANSLATE_MIRRORS) {
+    try {
+      console.log(`Attempting translation via: ${url}`);
+      const response = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+          q: texts,
+          source: langMap[source] || source.toLowerCase(),
+          target: langMap[target] || target.toLowerCase(),
+          format: "text",
+          api_key: "",
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        // If 4xx/5xx, try next mirror
+        const text = await response.text();
+        console.warn(`Mirror ${url} failed: ${response.status} ${text}`);
+        continue;
+      }
+
+      const data = await response.json();
+
+      if (data && Array.isArray(data.translatedText)) {
+        return data.translatedText;
+      } else if (data && typeof data.translatedText === "string") {
+        return [data.translatedText];
+      }
+
+      // If format is wrong, consider failed and try next
+      console.warn(`Mirror ${url} returned unexpected format:`, data);
+      continue;
+    } catch (error) {
+      console.warn(`Mirror ${url} connection failed:`, error);
+      lastError = error;
+      // Try next
     }
-
-    const data = await response.json();
-    // LibreTranslate returns { translatedText: string | string[] }
-    // If 'q' is array, 'translatedText' is array.
-    if (data && Array.isArray(data.translatedText)) {
-      return data.translatedText;
-    } else if (data && typeof data.translatedText === "string") {
-      // Fallback if it returned single string for single item array
-      return [data.translatedText];
-    }
-
-    return texts; // Fallback to original if format unexpected
-  } catch (error) {
-    console.error("Translation request failed:", error);
-    throw error;
   }
+
+  console.error("All translation mirrors failed.");
+  throw lastError || new Error("All translation mirrors failed.");
 };
 
 export const translateServiceData = async (
