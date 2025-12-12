@@ -7,9 +7,6 @@ import connectDB from "./config/database";
 import { ensureAdmin } from "./utils/bootstrapAdmin";
 
 dotenv.config();
-console.log("Server starting...");
-console.log("ADMIN_EMAIL present:", !!process.env.ADMIN_EMAIL);
-console.log("ADMIN_PASSWORD present:", !!process.env.ADMIN_PASSWORD);
 
 const app = express();
 export { app };
@@ -52,7 +49,6 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     await connectDB();
-    console.log("Database connected. calling ensureAdmin...");
     await ensureAdmin();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

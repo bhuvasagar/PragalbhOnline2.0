@@ -11,11 +11,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import api from "../../lib/client";
-import { useToast } from "../../context/ToastContext";
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -57,7 +55,7 @@ const AdminLogin: React.FC = () => {
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <img
-            src="/assets/marissa-grootes-flRm0z3MEoA-unsplash.jpg"
+            src="assets\marissa-grootes-flRm0z3MEoA-unsplash.jpg"
             alt="Legal Office"
             className="w-full h-full object-cover opacity-20 mix-blend-overlay"
           />
@@ -80,7 +78,7 @@ const AdminLogin: React.FC = () => {
           </div>
 
           <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 tracking-tight leading-tight">
-            PRAGALBH <br />
+            Legal Associates <br />
             <span className="text-indigo-300">& Xerox Services</span>
           </h1>
 
@@ -233,19 +231,6 @@ const AdminLogin: React.FC = () => {
             <p className="text-xs text-slate-400">
               © 2024 Legal Associates & Xerox Services. <br />
               Authorized personnel only.
-            </p>
-          </div>
-
-          {/* DEBUG SECTION */}
-          <div className="mt-4 p-4 bg-red-100 text-red-800 rounded text-xs overflow-auto">
-            <p className="font-bold">DEBUG INFO (Remove in Prod):</p>
-            <p>Typed User: {username}</p>
-            <p>Typed Pass: {password}</p>
-            <p>Backend URL: {api.defaults.baseURL}</p>
-            <p>VITE_API_BASE_URL: {import.meta.env.VITE_API_BASE_URL}</p>
-            {/* Frontend cannot see ADMIN_EMAIL unless prefixed with VITE_ */}
-            <p>
-              VITE_ADMIN_EMAIL: {import.meta.env.VITE_ADMIN_EMAIL || "Not set"}
             </p>
           </div>
         </div>
