@@ -33,9 +33,7 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({
     for (let i = 0; i < retries; i++) {
       try {
         const { data } = await api.get("/services");
-        console.log("ServiceContext: Fetched Data:", data);
         const mappedData = data.map((s: any) => ({ ...s, id: s._id || s.id }));
-        console.log("ServiceContext: Mapped Data:", mappedData);
         setServices(mappedData);
         localStorage.setItem(
           "pragalbh_services_data",

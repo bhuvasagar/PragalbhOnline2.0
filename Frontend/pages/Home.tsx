@@ -47,8 +47,6 @@ const Counter = ({
 const Home: React.FC = () => {
   const { language, t } = useLanguage();
   const { services, isLoading: isServicesLoading } = useServices();
-  console.log("Home: Services:", services);
-  console.log("Home: IsLoading:", isServicesLoading);
 
   const featuredServices = services.slice(0, 4);
 
@@ -213,13 +211,7 @@ const Home: React.FC = () => {
             </Link>
           </div>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {isServicesLoading
               ? [1, 2, 3, 4].map((i) => (
                   <div
@@ -236,11 +228,17 @@ const Home: React.FC = () => {
                   </div>
                 ))
               : featuredServices.map((service) => (
-                  <motion.div key={service.id} variants={itemVariants}>
+                  <motion.div
+                    key={service.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                  >
                     <ServiceCard service={service} />
                   </motion.div>
                 ))}
-          </motion.div>
+          </div>
 
           <div className="mt-8 text-center md:hidden">
             <Link
