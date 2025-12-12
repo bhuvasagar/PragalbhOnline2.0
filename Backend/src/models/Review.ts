@@ -4,7 +4,7 @@ export interface IReview extends Document {
   name: string;
   rating: number;
   content: string;
-  language: "EN" | "GU";
+  language: "EN" | "GU" | "HI";
   approved: boolean;
   createdAt: Date;
 }

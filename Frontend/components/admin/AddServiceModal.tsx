@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Globe, Plus, Trash2 } from "lucide-react";
+import { X, Globe, Loader2, Sparkles, Trash2, Plus } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { useToast } from "../../context/ToastContext";
 import api from "../../lib/client";
@@ -10,21 +10,13 @@ interface AddServiceModalProps {
   onSuccess: () => void;
 }
 
-type LanguageKey = "EN" | "GU";
+type LanguageKey = "EN" | "GU" | "HI";
 
 const LANGUAGES: { key: LanguageKey; label: string }[] = [
   { key: "EN", label: "English" },
   { key: "GU", label: "Gujarati" },
+  { key: "HI", label: "Hindi" },
 ];
-
-interface ServiceFormData {
-  title: { EN: string; GU: string };
-  description: { EN: string; GU: string };
-  documents: { EN: string[]; GU: string[] };
-  category: string;
-  price: string;
-  iconName: string;
-}
 
 const AddServiceModal: React.FC<
   AddServiceModalProps & { serviceToEdit?: any }
@@ -32,13 +24,14 @@ const AddServiceModal: React.FC<
   const { t } = useLanguage();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<LanguageKey>("EN");
+  const [isTranslating, setIsTranslating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
-  const [formData, setFormData] = useState<ServiceFormData>({
-    title: { EN: "", GU: "" },
-    description: { EN: "", GU: "" },
-    documents: { EN: [""], GU: [""] },
+  const [formData, setFormData] = useState({
+    title: { EN: "", GU: "", HI: "" },
+    description: { EN: "", GU: "", HI: "" },
+    documents: { EN: [""], GU: [""], HI: [""] },
     category: "ONLINE", // Default
     price: "",
     iconName: "FileText",
@@ -47,9 +40,9 @@ const AddServiceModal: React.FC<
   React.useEffect(() => {
     if (serviceToEdit) {
       setFormData({
-        title: serviceToEdit.title || { EN: "", GU: "" },
-        description: serviceToEdit.description || { EN: "", GU: "" },
-        documents: serviceToEdit.documents || { EN: [""], GU: [""] },
+        title: serviceToEdit.title || { EN: "", GU: "", HI: "" },
+        description: serviceToEdit.description || { EN: "", GU: "", HI: "" },
+        documents: serviceToEdit.documents || { EN: [""], GU: [""], HI: [""] },
         category: serviceToEdit.category || "ONLINE",
         price: serviceToEdit.price || "",
         iconName: serviceToEdit.iconName || "FileText",
@@ -58,9 +51,9 @@ const AddServiceModal: React.FC<
     } else {
       // Reset form when opening in "Add" mode
       setFormData({
-        title: { EN: "", GU: "" },
-        description: { EN: "", GU: "" },
-        documents: { EN: [""], GU: [""] },
+        title: { EN: "", GU: "", HI: "" },
+        description: { EN: "", GU: "", HI: "" },
+        documents: { EN: [""], GU: [""], HI: [""] },
         category: "ONLINE",
         price: "",
         iconName: "FileText",
@@ -110,11 +103,73 @@ const AddServiceModal: React.FC<
     }));
   };
 
+  const performTranslation = async () => {
+    // Detect source language based on active tab
+    const sourceLang = activeTab;
+
+    // Safety check: ensure source content exists
+    if (!formData.title[sourceLang] || !formData.description[sourceLang]) {
+      showToast(
+        `Please fill in the ${
+          LANGUAGES.find((l) => l.key === sourceLang)?.label
+        } details first.`,
+        "error"
+      );
+      return false;
+    }
+
+    const contentToTranslate = {
+      title: formData.title,
+      description: formData.description,
+      documents: formData.documents,
+      category: formData.category,
+      iconName: formData.iconName,
+    };
+
+    const targetLangs = LANGUAGES.map((l) => l.key).filter(
+      (k) => k !== sourceLang
+    );
+
+    setIsTranslating(true);
+    try {
+      const response = await api.post("/translations/translate", {
+        content: contentToTranslate,
+        sourceLang,
+        targetLangs,
+      });
+
+      const translatedData = response.data;
+
+      setFormData((prev) => ({
+        ...prev,
+        title: { ...prev.title, ...translatedData.title },
+        description: { ...prev.description, ...translatedData.description },
+        documents: { ...prev.documents, ...translatedData.documents },
+      }));
+      return true;
+    } catch (error) {
+      console.error("Translation failed", error);
+      showToast("Translation failed. Please try again.", "error");
+      return false;
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  // Manual Trigger Button
+  const handleAutoTranslate = async () => {
+    await performTranslation();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isPreviewMode) {
-      setIsPreviewMode(true);
+      // Phase 1: Translate & Preview
+      const success = await performTranslation();
+      if (success) {
+        setIsPreviewMode(true);
+      }
       return;
     }
 
@@ -163,8 +218,8 @@ const AddServiceModal: React.FC<
               {isPreviewMode
                 ? "Please review all translations before saving"
                 : serviceToEdit
-                ? "Update service details"
-                : "Create a new service"}
+                ? "Update service details and translations"
+                : "Create a new service with AI-powered translation"}
             </p>
           </div>
           <button
@@ -205,6 +260,15 @@ const AddServiceModal: React.FC<
 
                 <div className="hidden sm:block">
                   {/* Hidden on desktop since submit button now handles this, but keeping logic just in case user wants manual trigger */}
+                  <button
+                    type="button"
+                    onClick={handleAutoTranslate}
+                    disabled={isTranslating}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                  >
+                    <Sparkles size={14} />
+                    Manual Translate
+                  </button>
                 </div>
               </div>
 
@@ -403,10 +467,13 @@ const AddServiceModal: React.FC<
             type={isPreviewMode ? "button" : "submit"}
             form={isPreviewMode ? undefined : "add-service-form"}
             onClick={isPreviewMode ? (e) => handleSubmit(e as any) : undefined}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isTranslating}
             className="w-full sm:w-auto px-6 py-2 bg-primary-600 text-white font-bold rounded-lg hover:bg-primary-700 disabled:opacity-50 transition shadow-lg hover:shadow-primary-500/30 flex justify-center items-center gap-2"
           >
-            {isSubmitting
+            {isTranslating && <Loader2 size={18} className="animate-spin" />}
+            {isTranslating
+              ? "Translating..."
+              : isSubmitting
               ? "Saving..."
               : isPreviewMode
               ? "Confirm & Save"

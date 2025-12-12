@@ -38,16 +38,9 @@ export const createService = async (req: AuthRequest, res: Response) => {
     const service = new Service(req.body);
     const createdService = await service.save();
     res.status(201).json(createdService);
-  } catch (error: any) {
-    console.error("Create Service Error:", error);
-    res
-      .status(500)
-      .json({
-        message: "Server error",
-        error: error.message,
-        errors: error,
-        stack: error.stack,
-      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
@@ -68,9 +61,8 @@ export const updateService = async (req: AuthRequest, res: Response) => {
     } else {
       res.status(404).json({ message: "Service not found" });
     }
-  } catch (error: any) {
-    console.error("Update Service Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -87,8 +79,8 @@ export const deleteService = async (req: AuthRequest, res: Response) => {
     } else {
       res.status(404).json({ message: "Service not found" });
     }
-  } catch (error: any) {
-    console.error("Delete Service Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };

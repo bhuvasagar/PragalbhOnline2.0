@@ -72,7 +72,7 @@ const Header: React.FC = () => {
 
               {open && (
                 <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-slate-800 rounded-lg shadow-xl py-2 border border-slate-100 dark:border-slate-700">
-                  {["EN", "GU"].map((lang) => (
+                  {["EN", "GU", "HI"].map((lang) => (
                     <button
                       key={lang}
                       onClick={() => {
@@ -87,7 +87,9 @@ const Header: React.FC = () => {
                     >
                       {lang === "EN"
                         ? "English"
-                        : "ગુજરાતી"}
+                        : lang === "GU"
+                        ? "ગુજરાતી"
+                        : "हिंदी"}
                     </button>
                   ))}
                 </div>

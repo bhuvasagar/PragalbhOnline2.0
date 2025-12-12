@@ -6,17 +6,17 @@ export interface IService extends Document {
   title: {
     EN: string;
     GU: string;
-    HI?: string;
+    HI: string;
   };
   description: {
     EN: string;
     GU: string;
-    HI?: string;
+    HI: string;
   };
   documents: {
     EN: string[];
     GU: string[];
-    HI?: string[];
+    HI: string[];
   };
 }
 
@@ -30,13 +30,13 @@ const ServiceSchema: Schema = new Schema(
     },
     title: {
       EN: { type: String, required: true },
-      GU: { type: String, required: false },
-      HI: { type: String, required: false },
+      GU: { type: String, required: true },
+      HI: { type: String, required: true },
     },
     description: {
       EN: { type: String, required: true },
-      GU: { type: String, required: false },
-      HI: { type: String, required: false },
+      GU: { type: String, required: true },
+      HI: { type: String, required: true },
     },
     documents: {
       EN: [{ type: String }],
