@@ -175,7 +175,7 @@ const AdminReviews: React.FC = () => {
                     >
                       <Check size={20} />
                       <span className="hidden sm:inline text-sm font-medium">
-                        Approve
+                        Show
                       </span>
                     </button>
                   ) : (
@@ -186,7 +186,7 @@ const AdminReviews: React.FC = () => {
                     >
                       <X size={20} />
                       <span className="hidden sm:inline text-sm font-medium">
-                        Reject
+                        Hide
                       </span>
                     </button>
                   )}

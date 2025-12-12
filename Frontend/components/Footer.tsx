@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
+import logo from "../assets/logo.png";
+
 const Footer: React.FC = () => {
   const { t } = useLanguage();
   const mapAddress =
@@ -24,14 +26,16 @@ const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center text-primary-900 font-bold text-lg">
-                PA
-              </div>
+              <img
+                src={logo}
+                alt="Pragalbh Associates"
+                className="h-10 w-auto bg-white rounded-md p-0.5"
+              />
               <div className="flex flex-col">
                 <span className="text-xl font-heading font-bold  leading-none">
                   Pragalbh
                 </span>
-                <span className="text-xs text-primary-5000 font-medium tracking-wider">
+                <span className="text-xs text-primary-500 font-medium tracking-wider">
                   Associates
                 </span>
               </div>

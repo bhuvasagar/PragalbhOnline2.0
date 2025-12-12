@@ -5,6 +5,8 @@ import { useLanguage } from "../context/LanguageContext";
 import { useTheme } from "../context/ThemeContext";
 import { Language } from "../types";
 
+import logo from "../assets/logo.png";
+
 const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
@@ -29,9 +31,7 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary-900 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              PA
-            </div>
+            <img src={logo} alt="Pragalbh Associates" className="h-10 w-auto" />
             <div className="flex flex-col">
               <span className="text-xl font-heading font-bold text-primary-900 dark:text-white leading-none">
                 Pragalbh
