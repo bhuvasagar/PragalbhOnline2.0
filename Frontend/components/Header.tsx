@@ -72,11 +72,11 @@ const Header: React.FC = () => {
 
               {open && (
                 <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-slate-800 rounded-lg shadow-xl py-2 border border-slate-100 dark:border-slate-700">
-                  {["EN", "GU", "HI"].map((lang) => (
+                  {["EN", "GU"].map((lang) => (
                     <button
                       key={lang}
                       onClick={() => {
-                        setLanguage(lang);
+                        setLanguage(lang as Language);
                         setOpen(false);
                       }}
                       className={`block w-full text-left px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 ${
@@ -85,11 +85,7 @@ const Header: React.FC = () => {
                           : "text-slate-700 dark:text-slate-200"
                       }`}
                     >
-                      {lang === "EN"
-                        ? "English"
-                        : lang === "GU"
-                        ? "ગુજરાતી"
-                        : "हिंदी"}
+                      {lang === "EN" ? "English" : "ગુજરાતી"}
                     </button>
                   ))}
                 </div>

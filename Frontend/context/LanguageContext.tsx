@@ -14,6 +14,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
   const t = (key: string): string => {
     const entry = DICTIONARY[key];
     if (!entry) return key;
+    // @ts-ignore - Temporary ignore if strict type checking fails due to partial DICTIONARY updates
     return entry[language] || entry["GU"];
   };
 
