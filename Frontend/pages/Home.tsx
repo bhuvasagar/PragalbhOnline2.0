@@ -47,6 +47,8 @@ const Counter = ({
 const Home: React.FC = () => {
   const { language, t } = useLanguage();
   const { services, isLoading: isServicesLoading } = useServices();
+  console.log("Home: Services:", services);
+  console.log("Home: IsLoading:", isServicesLoading);
 
   const featuredServices = services.slice(0, 4);
 

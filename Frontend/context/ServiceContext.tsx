@@ -28,14 +28,14 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({
   // Load services from API
   // Load services from API
   // Load services from API
-  const fetchServices = async (retries = 5, delay = 2000) => {
+  const fetchServices = async (retries = 3, delay = 1000) => {
     setIsLoading(true);
     for (let i = 0; i < retries; i++) {
       try {
-        console.log(`Fetching services (Attempt ${i + 1}/${retries})...`);
         const { data } = await api.get("/services");
-        console.log("Services fetched successfully:", data.length);
+        console.log("ServiceContext: Fetched Data:", data);
         const mappedData = data.map((s: any) => ({ ...s, id: s._id || s.id }));
+        console.log("ServiceContext: Mapped Data:", mappedData);
         setServices(mappedData);
         localStorage.setItem(
           "pragalbh_services_data",
@@ -49,7 +49,6 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({
           error
         );
         if (i === retries - 1) {
-          // Final attempt failed
           const savedServices = localStorage.getItem("pragalbh_services_data");
           if (savedServices) {
             const parsedServices = JSON.parse(savedServices);
@@ -57,8 +56,7 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({
               parsedServices.map((s: any) => ({ ...s, id: s._id || s.id }))
             );
           } else {
-            // Keep current state (likely empty) but don't explicitly clear if we ever add other persistence
-            if (services.length === 0) setServices([]);
+            setServices([]);
           }
         } else {
           await new Promise((resolve) => setTimeout(resolve, delay));
