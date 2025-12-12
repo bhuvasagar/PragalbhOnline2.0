@@ -68,12 +68,21 @@ const Home: React.FC = () => {
   const [stats, setStats] = React.useState<any[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const statsRes = await api.get("/stats");
-        setStats(statsRes.data);
-      } catch (error) {
-        console.error("Failed to fetch home data", error);
+    const fetchData = async (retries = 3, delay = 1000) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const statsRes = await api.get("/stats");
+          setStats(statsRes.data);
+          return;
+        } catch (error) {
+          console.error(
+            `Failed to fetch home data (Attempt ${i + 1}/${retries})`,
+            error
+          );
+          if (i < retries - 1) {
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+        }
       }
     };
     fetchData();

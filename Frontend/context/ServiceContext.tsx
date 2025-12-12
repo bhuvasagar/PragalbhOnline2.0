@@ -26,25 +26,35 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({
   // Load services from API
   // Load services from API
   // Load services from API
-  const fetchServices = async () => {
-    try {
-      const { data } = await api.get("/services");
-      const mappedData = data.map((s: any) => ({ ...s, id: s._id || s.id }));
-      setServices(mappedData);
-      localStorage.setItem(
-        "pragalbh_services_data",
-        JSON.stringify(mappedData)
-      );
-    } catch (error) {
-      console.error("Failed to fetch services from API", error);
-      const savedServices = localStorage.getItem("pragalbh_services_data");
-      if (savedServices) {
-        const parsedServices = JSON.parse(savedServices);
-        setServices(
-          parsedServices.map((s: any) => ({ ...s, id: s._id || s.id }))
+  const fetchServices = async (retries = 3, delay = 1000) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const { data } = await api.get("/services");
+        const mappedData = data.map((s: any) => ({ ...s, id: s._id || s.id }));
+        setServices(mappedData);
+        localStorage.setItem(
+          "pragalbh_services_data",
+          JSON.stringify(mappedData)
         );
-      } else {
-        setServices([]);
+        return;
+      } catch (error) {
+        console.error(
+          `Failed to fetch services (Attempt ${i + 1}/${retries})`,
+          error
+        );
+        if (i === retries - 1) {
+          const savedServices = localStorage.getItem("pragalbh_services_data");
+          if (savedServices) {
+            const parsedServices = JSON.parse(savedServices);
+            setServices(
+              parsedServices.map((s: any) => ({ ...s, id: s._id || s.id }))
+            );
+          } else {
+            setServices([]);
+          }
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
       }
     }
   };

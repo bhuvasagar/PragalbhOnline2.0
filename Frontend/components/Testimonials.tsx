@@ -26,12 +26,23 @@ const Testimonials: React.FC = () => {
     fetchReviews();
   }, []);
 
-  const fetchReviews = async () => {
-    try {
-      const { data } = await api.get("/reviews");
-      setReviews(data);
-    } catch (error) {
-      console.error("Failed to fetch reviews", error);
+  const fetchReviews = async (retries = 3, delay = 1000) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const { data } = await api.get("/reviews");
+        setReviews(data);
+        return;
+      } catch (error) {
+        console.error(
+          `Failed to fetch reviews (Attempt ${i + 1}/${retries})`,
+          error
+        );
+        if (i === retries - 1) {
+          // No fallback for reviews currently, just leave empty
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+      }
     }
   };
 
