@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Service from "../models/Service";
-import Application from "../models/Application";
+import GlobalStats from "../models/GlobalStats";
 
 // @desc    Get all stats
 // @route   GET /api/stats
@@ -8,9 +8,14 @@ import Application from "../models/Application";
 export const getStats = async (req: Request, res: Response) => {
   try {
     const servicesCount = await Service.countDocuments();
-    // Assuming "Happy Clients" roughly equals number of applications for now
-    // Or we could have a specific "Client" model or count unique phones in applications
-    const applicationsCount = await Application.countDocuments();
+
+    // Find or create global stats
+    let globalStats = await GlobalStats.findOne({ name: "site_stats" });
+    if (!globalStats) {
+      globalStats = await GlobalStats.create({ name: "site_stats", visits: 0 });
+    }
+
+    const visitCount = globalStats.visits || 0;
 
     // Years Experience Calculation
     const START_YEAR = 2015;
@@ -24,7 +29,7 @@ export const getStats = async (req: Request, res: Response) => {
     const stats = [
       {
         id: 1,
-        value: (applicationsCount > 0 ? applicationsCount : 0) + 5000, // Real DB Data + Base
+        value: visitCount + 5000, // Visit Data + Base
         suffix: "+",
         label: {
           EN: "Happy Clients",
@@ -60,6 +65,23 @@ export const getStats = async (req: Request, res: Response) => {
     res.json(stats);
   } catch (error) {
     console.error("Stats Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// @desc    Increment visit count
+// @route   POST /api/stats/visit
+// @access  Public
+export const incrementVisits = async (req: Request, res: Response) => {
+  try {
+    const stats = await GlobalStats.findOneAndUpdate(
+      { name: "site_stats" },
+      { $inc: { visits: 1 } },
+      { upsert: true, new: true }
+    );
+    res.json({ success: true, visits: stats.visits });
+  } catch (error) {
+    console.error("Increment Visits Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

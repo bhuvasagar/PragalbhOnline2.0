@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import Services from "./pages/Services";
 import Apply from "./pages/Apply";
 import Contact from "./pages/Contact";
+import VisitTracker from "./components/VisitTracker";
 
 import { AdminProvider } from "./context/AdminContext";
 import { AdminProfileProvider } from "./context/AdminProfileContext";
@@ -38,6 +39,7 @@ const App: React.FC = () => {
             <ServiceProvider>
               <HashRouter>
                 <ScrollToTop />
+                <VisitTracker />
                 <div className="flex flex-col min-h-screen font-sans dark:bg-slate-900 dark:text-white">
                   <Routes>
                     {/* Public Routes */}
