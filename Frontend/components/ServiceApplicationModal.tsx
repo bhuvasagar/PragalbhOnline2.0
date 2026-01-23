@@ -23,6 +23,7 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
     customerName: "",
     phone: "",
     message: "",
+    files: [] as File[],
   });
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
@@ -38,23 +39,32 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
     setErrorMessage("");
 
     try {
-      await api.post("/applications", {
-        customerName: formData.customerName,
-        phone: formData.phone,
-        message: formData.message,
-        serviceId: service.id || (service as any)._id,
-        serviceName: service.title.EN, // Saving English title for consistency in admin
-        date: new Date().toISOString(),
-        status: "pending",
+      const formDataToSend = new FormData();
+      formDataToSend.append("customerName", formData.customerName);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("message", formData.message);
+      formDataToSend.append("serviceId", service.id || (service as any)._id);
+      formDataToSend.append("serviceName", service.title.EN);
+      formDataToSend.append("date", new Date().toISOString());
+      formDataToSend.append("status", "pending");
+
+      formData.files.forEach((file, index) => {
+        formDataToSend.append("files", file);
+      });
+
+      const response = await api.post("/applications", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
       setStatus("success");
       // Reset form after success
       setTimeout(() => {
         setStatus("idle");
-        setFormData({ customerName: "", phone: "", message: "" });
+        setFormData({ customerName: "", phone: "", message: "", files: [] });
         onClose();
 
-        // Redirect to WhatsApp with Document List
+        // Redirect to WhatsApp with Document List and file links
         const serviceTitleFormatted =
           service.title[language] || service.title.EN;
         const documentsList =
@@ -69,13 +79,16 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
           });
         }
 
-        whatsappMessage += `\n\nRegards,\nPragalbh Services`;
+        // Add uploaded file links
+        if (response.data.files && response.data.files.length > 0) {
+          whatsappMessage += `\n\n*Uploaded Documents:*\n`;
+          response.data.files.forEach((filePath: string, index: number) => {
+            const fileUrl = `${window.location.origin}${filePath}`;
+            whatsappMessage += `${index + 1}. ${fileUrl}\n`;
+          });
+        }
 
-        // Format phone number
-        // let phone = formData.phone.replace(/\D/g, ""); // remove spaces, +, -
-        // if (phone.length === 10) {
-        //   phone = "91" + phone; // auto add India country code
-        // }
+        whatsappMessage += `\n\nRegards,\nPragalbh Services`;
 
         const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(
           "+",
@@ -175,17 +188,22 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  {t("form.message")}
+                  Upload Documents <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  rows={3}
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
+                <input
+                  type="file"
+                  multiple
+                  required
+                  accept=".pdf,.jpg,.jpeg,.png,.gif"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    setFormData({ ...formData, files });
+                  }}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white transition-colors"
-                  placeholder="Any additional details..."
                 />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Upload PDFs and images (max 10MB each)
+                </p>
               </div>
 
               <button
