@@ -131,4 +131,4 @@ export const deleteApplications = async (req: AuthRequest, res: Response) => {
 
 
 
-aa aakho code application.controller.ts che
+
