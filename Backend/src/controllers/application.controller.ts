@@ -7,27 +7,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 // @access  Public
 export const submitApplication = async (req: Request, res: Response) => {
   try {
-    const {
-      customerName,
-      phone,
-      serviceId,
-      serviceName,
-      message,
-      documentUrl, // ⭐ REQUIRED
-    } = req.body;
-
-    // Basic validation
-    if (!customerName || !phone || !serviceId || !serviceName) {
-      return res.status(400).json({
-        message: "Required fields are missing",
-      });
-    }
-
-    if (!documentUrl) {
-      return res.status(400).json({
-        message: "Document is required",
-      });
-    }
+    const { customerName, phone, serviceId, serviceName, message } = req.body;
 
     const application = new Application({
       customerName,
@@ -35,22 +15,13 @@ export const submitApplication = async (req: Request, res: Response) => {
       serviceId,
       serviceName,
       message,
-      documentUrl,
-      status: "pending",
     });
 
     const createdApplication = await application.save();
-
-    res.status(201).json({
-      success: true,
-      data: createdApplication,
-    });
-  } catch (error: any) {
+    res.status(201).json(createdApplication);
+  } catch (error) {
     console.error("Submission Error:", error);
-    res.status(400).json({
-      success: false,
-      message: error.message || "Server error",
-    });
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
@@ -59,17 +30,10 @@ export const submitApplication = async (req: Request, res: Response) => {
 // @access  Private/Admin
 export const getApplications = async (req: AuthRequest, res: Response) => {
   try {
-    const applications = await Application.find().sort({ createdAt: -1 });
-    res.json({
-      success: true,
-      data: applications,
-    });
+    const applications = await Application.find().sort({ date: -1 });
+    res.json(applications);
   } catch (error) {
-    console.error("Get Applications Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -82,34 +46,21 @@ export const updateApplicationStatus = async (
 ) => {
   try {
     const { status } = req.body;
-
-    if (!status) {
-      return res.status(400).json({ message: "Status is required" });
-    }
-
     const application = await Application.findById(req.params.id);
 
-    if (!application) {
-      return res.status(404).json({ message: "Application not found" });
+    if (application) {
+      application.status = status;
+      const updatedApplication = await application.save();
+      res.json(updatedApplication);
+    } else {
+      res.status(404).json({ message: "Application not found" });
     }
-
-    application.status = status;
-    const updatedApplication = await application.save();
-
-    res.json({
-      success: true,
-      data: updatedApplication,
-    });
   } catch (error) {
-    console.error("Update Status Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// @desc    Update application details
+// @desc    Update application details (Name, Phone, etc.)
 // @route   PATCH /api/applications/:id
 // @access  Private/Admin
 export const updateApplicationDetails = async (
@@ -119,32 +70,25 @@ export const updateApplicationDetails = async (
   try {
     const { customerName, phone, message, status, serviceId, serviceName } =
       req.body;
-
     const application = await Application.findById(req.params.id);
 
-    if (!application) {
-      return res.status(404).json({ message: "Application not found" });
+    if (application) {
+      application.customerName = customerName || application.customerName;
+      application.phone = phone || application.phone;
+      application.message =
+        message !== undefined ? message : application.message;
+      application.status = status || application.status;
+
+      if (serviceId) application.serviceId = serviceId;
+      if (serviceName) application.serviceName = serviceName;
+
+      const updatedApplication = await application.save();
+      res.json(updatedApplication);
+    } else {
+      res.status(404).json({ message: "Application not found" });
     }
-
-    if (customerName) application.customerName = customerName;
-    if (phone) application.phone = phone;
-    if (message !== undefined) application.message = message;
-    if (status) application.status = status;
-    if (serviceId) application.serviceId = serviceId;
-    if (serviceName) application.serviceName = serviceName;
-
-    const updatedApplication = await application.save();
-
-    res.json({
-      success: true,
-      data: updatedApplication,
-    });
   } catch (error) {
-    console.error("Update Application Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -154,48 +98,37 @@ export const updateApplicationDetails = async (
 export const deleteApplication = async (req: AuthRequest, res: Response) => {
   try {
     const result = await Application.deleteOne({ _id: req.params.id });
-
-    if (result.deletedCount && result.deletedCount > 0) {
-      res.json({
-        success: true,
-        message: "Application removed",
-      });
+    if (result.deletedCount > 0) {
+      res.json({ message: "Application removed" });
     } else {
       res.status(404).json({ message: "Application not found" });
     }
   } catch (error) {
-    console.error("Delete Application Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };
-
 // @desc    Bulk delete applications
 // @route   POST /api/applications/bulk-delete
 // @access  Private/Admin
 export const deleteApplications = async (req: AuthRequest, res: Response) => {
   try {
     const { ids } = req.body;
-
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({
-        message: "No IDs provided",
-      });
+      return res.status(400).json({ message: "No IDs provided" });
     }
 
     const result = await Application.deleteMany({ _id: { $in: ids } });
 
-    res.json({
-      success: true,
-      message: `${result.deletedCount} applications removed`,
-    });
+    if (result.deletedCount > 0) {
+      res.json({ message: `${result.deletedCount} applications removed` });
+    } else {
+      res.status(404).json({ message: "No applications found to delete" });
+    }
   } catch (error) {
-    console.error("Bulk Delete Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+aa aakho code application.controller.ts che
