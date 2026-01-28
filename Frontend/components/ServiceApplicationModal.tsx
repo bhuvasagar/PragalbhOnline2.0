@@ -38,20 +38,15 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
     setErrorMessage("");
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("customerName", formData.customerName);
-      formDataToSend.append("phone", formData.phone);
-      formDataToSend.append("message", formData.message);
-      formDataToSend.append("serviceId", service.id || (service as any)._id);
-      formDataToSend.append("serviceName", service.title.EN);
-      formDataToSend.append("date", new Date().toISOString());
-      formDataToSend.append("status", "pending");
+      const formDataToSend = {
+        customerName: formData.customerName,
+        phone: formData.phone,
+        message: formData.message,
+        serviceId: service.id || (service as any)._id,
+        serviceName: service.title.EN,
+      };
 
-      const response = await api.post("/applications", formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await api.post("/applications", formDataToSend);
       setStatus("success");
       // Reset form after success
       setTimeout(() => {
