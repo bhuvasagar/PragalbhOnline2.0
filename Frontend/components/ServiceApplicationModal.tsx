@@ -50,7 +50,7 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
     const validFiles: File[] = [];
     const previews: { name: string; type: string }[] = [];
 
-    files.forEach((file) => {
+    files.forEach((file: File) => {
       // Check file type
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
         setErrorMessage(`File "${file.name}" is not supported. Please upload PDF or Image files only.`);
