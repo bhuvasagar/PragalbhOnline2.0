@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from "dotenv";
+import path from "path";
 import connectDB from "./config/database";
 import { ensureAdmin } from "./utils/bootstrapAdmin";
 
@@ -22,6 +23,9 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 import authRoutes from "./routes/auth.routes";
 import serviceRoutes from "./routes/service.routes";

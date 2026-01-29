@@ -8,10 +8,14 @@ import {
   deleteApplications,
 } from "../controllers/application.controller";
 import { protect } from "../middleware/auth.middleware";
+import { upload } from "../config/multer";
 
 const router = express.Router();
 
-router.route("/").post(submitApplication).get(protect, getApplications);
+router
+  .route("/")
+  .post(upload.array("documents", 5), submitApplication)
+  .get(protect, getApplications);
 
 router.route("/:id/status").patch(protect, updateApplicationStatus);
 

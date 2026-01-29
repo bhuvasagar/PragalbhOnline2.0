@@ -9,12 +9,27 @@ export const submitApplication = async (req: Request, res: Response) => {
   try {
     const { customerName, phone, serviceId, serviceName, message } = req.body;
 
+    // Handle uploaded files
+    const documents = [];
+    if (req.files && Array.isArray(req.files)) {
+      req.files.forEach((file: Express.Multer.File) => {
+        documents.push({
+          originalName: file.originalname,
+          filename: file.filename,
+          mimeType: file.mimetype,
+          size: file.size,
+          uploadedAt: new Date(),
+        });
+      });
+    }
+
     const application = new Application({
       customerName,
       phone,
       serviceId,
       serviceName,
       message,
+      documents,
     });
 
     const createdApplication = await application.save();
