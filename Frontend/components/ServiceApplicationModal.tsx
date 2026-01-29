@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
-import { X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { X, Loader2, CheckCircle, AlertCircle, Upload, File, Image as ImageIcon, Trash2 } from "lucide-react";
 import { Service } from "../types";
 import { useLanguage } from "../context/LanguageContext";
 import api from "../lib/client";
@@ -24,12 +24,75 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
     phone: "",
     message: "",
   });
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<{ name: string; type: string }[]>([]);
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const MAX_FILES = 5;
+
   if (!isOpen) return null;
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    // Validate file count
+    if (uploadedFiles.length + files.length > MAX_FILES) {
+      setErrorMessage(`You can upload a maximum of ${MAX_FILES} files`);
+      return;
+    }
+
+    let hasError = false;
+    const validFiles: File[] = [];
+    const previews: { name: string; type: string }[] = [];
+
+    files.forEach((file) => {
+      // Check file type
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        setErrorMessage(`File "${file.name}" is not supported. Please upload PDF or Image files only.`);
+        hasError = true;
+        return;
+      }
+
+      // Check file size
+      if (file.size > MAX_FILE_SIZE) {
+        setErrorMessage(`File "${file.name}" is too large. Maximum size is 10MB.`);
+        hasError = true;
+        return;
+      }
+
+      validFiles.push(file);
+      previews.push({
+        name: file.name,
+        type: file.type,
+      });
+    });
+
+    if (!hasError) {
+      setUploadedFiles([...uploadedFiles, ...validFiles]);
+      setFilePreviews([...filePreviews, ...previews]);
+      setErrorMessage("");
+    }
+
+    // Reset input
+    e.target.value = "";
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
+    setFilePreviews(filePreviews.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type === "application/pdf") {
+      return <File size={16} className="text-red-600" />;
+    }
+    return <ImageIcon size={16} className="text-blue-600" />;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,20 +101,30 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
     setErrorMessage("");
 
     try {
-      const formDataToSend = {
-        customerName: formData.customerName,
-        phone: formData.phone,
-        message: formData.message,
-        serviceId: service.id || (service as any)._id,
-        serviceName: service.title.EN,
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append("customerName", formData.customerName);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("message", formData.message);
+      formDataToSend.append("serviceId", service.id || (service as any)._id);
+      formDataToSend.append("serviceName", service.title.EN);
 
-      const response = await api.post("/applications", formDataToSend);
+      // Append uploaded files
+      uploadedFiles.forEach((file) => {
+        formDataToSend.append("documents", file);
+      });
+
+      const response = await api.post("/applications", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setStatus("success");
       // Reset form after success
       setTimeout(() => {
         setStatus("idle");
         setFormData({ customerName: "", phone: "", message: "" });
+        setUploadedFiles([]);
+        setFilePreviews([]);
         onClose();
 
         // Redirect to WhatsApp with Document List and file links
@@ -165,6 +238,65 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white transition-colors"
                   placeholder="Enter your phone number"
                 />
+              </div>
+
+              {/* Document Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Upload Documents
+                </label>
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4 text-center hover:border-primary-500 dark:hover:border-primary-400 transition-colors bg-slate-50 dark:bg-slate-900/50">
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileUpload}
+                    disabled={uploadedFiles.length >= MAX_FILES}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    <Upload size={24} className="text-slate-400" />
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      <span className="font-semibold text-primary-600 dark:text-primary-400">
+                        Click to upload
+                      </span>
+                      {" or drag and drop"}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      PDF, JPG, PNG up to 10MB each ({uploadedFiles.length}/{MAX_FILES})
+                    </div>
+                  </label>
+                </div>
+
+                {/* Uploaded Files List */}
+                {filePreviews.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {filePreviews.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-700 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {getFileIcon(file.type)}
+                          <span className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                            {file.name}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile(index)}
+                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <button
