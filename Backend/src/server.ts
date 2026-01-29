@@ -11,11 +11,33 @@ dotenv.config();
 const app = express();
 export { app };
 
-// Middleware
+// CORS configuration (supports prod + preview + localhost)
+const allowedOrigins = [
+  "https://www.pragalbh.co.in",        // production frontend
+  /\.vercel\.app$/,                   // all Vercel preview deployments
+  "http://localhost:3000",
+  "http://localhost:5173"
+];
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*", // Default to * for dev if not set
-    credentials: true,
+    origin: (origin, callback) => {
+      // allow server-to-server & curl requests
+      if (!origin) return callback(null, true);
+
+      const isAllowed = allowedOrigins.some((allowed) =>
+        typeof allowed === "string"
+          ? allowed === origin
+          : allowed.test(origin)
+      );
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked origin: ${origin}`));
+      }
+    },
+    credentials: true
   })
 );
 app.use(helmet());
