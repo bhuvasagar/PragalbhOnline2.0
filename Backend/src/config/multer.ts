@@ -1,6 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { Request } from "express";
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, "../../uploads");
@@ -10,10 +11,10 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Set storage engine
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req: Request, file: Express.Multer.File, cb: Function) => {
     cb(null, uploadsDir);
   },
-  filename: (req, file, cb) => {
+  filename: (req: Request, file: Express.Multer.File, cb: Function) => {
     // Get customer name and phone from request body
     const customerName = (req.body.customerName || "user").replace(/\s+/g, "_");
     const phone = req.body.phone || "unknown";
@@ -26,7 +27,7 @@ const storage = multer.diskStorage({
 
 // File filter - only allow PDF and images
 const fileFilter = (
-  req: any,
+  req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {

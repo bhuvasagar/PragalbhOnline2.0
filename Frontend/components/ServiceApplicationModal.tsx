@@ -160,6 +160,39 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
     }
   };
 
+  const handleSendDocsWhatsApp = () => {
+    // Send the required document list to the user's WhatsApp using their phone input
+    const phoneInput = formData.phone?.toString().trim();
+    if (!phoneInput) {
+      setErrorMessage("Please enter your phone number to receive documents on WhatsApp.");
+      return;
+    }
+
+    // Normalize phone number: remove spaces, dashes and plus signs
+    const cleaned = phoneInput.replace(/[^0-9]/g, "");
+    if (cleaned.length < 6) {
+      setErrorMessage("Please enter a valid phone number including country code.");
+      return;
+    }
+
+    const serviceTitleFormatted = service.title[language] || service.title.EN;
+    const documentsList = service.documents?.[language] || service.documents?.["EN"];
+
+    let whatsappMessage = `Hello ${formData.customerName || ""},\n\nHere is the *${serviceTitleFormatted}* required document list.`;
+
+    if (documentsList && documentsList.length > 0) {
+      whatsappMessage += `\n\n*Required Documents:*\n`;
+      documentsList.forEach((doc: string, index: number) => {
+        whatsappMessage += `${index + 1}. ${doc}\n`;
+      });
+    }
+
+    whatsappMessage += `\n\nRegards,\nPragalbh Services`;
+
+    const whatsappUrl = `https://wa.me/${cleaned}?text=${encodeURIComponent(whatsappMessage)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   const serviceTitle = service.title[language] || service.title["EN"];
 
   return ReactDOM.createPortal(
@@ -297,6 +330,16 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
                     ))}
                   </div>
                 )}
+                {/* Send required documents to user's WhatsApp */}
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={handleSendDocsWhatsApp}
+                    className="w-full py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    Send required documents to WhatsApp
+                  </button>
+                </div>
               </div>
 
               <button
