@@ -1,0 +1,7 @@
+/* Minimal placeholder to avoid 404 when deployed. Customize or import Tailwind-built CSS in production. */
+html, body, #root {
+  height: 100%;
+}
+body {
+  margin: 0;
+}
