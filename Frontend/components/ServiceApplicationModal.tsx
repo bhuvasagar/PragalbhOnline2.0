@@ -32,8 +32,8 @@ const ServiceApplicationModal: React.FC<ServiceApplicationModalProps> = ({
   const [errorMessage, setErrorMessage] = useState("");
 
   const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-  const MAX_FILES = 5;
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 10MB
+  // const MAX_FILES = 5;
 
   if (!isOpen) return null;
 
