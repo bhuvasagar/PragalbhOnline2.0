@@ -12,10 +12,34 @@ dotenv.config();
 const app = express();
 export { app };
 
+// CORS Configuration
+const allowedOrigins = [
+  "http://localhost:5173", // Vite dev server
+  "http://localhost:3000", // Alternative dev port
+  process.env.CORS_ORIGIN || "https://your-production-frontend.vercel.app",
+  /\.vercel\.app$/, // Allow all Vercel preview deployments
+];
+
 // Middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*", // Default to * for dev if not set
+    origin: (origin, callback) => {
+      // allow requests with no origin (Postman, mobile apps, same-origin requests)
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.some((allowed) =>
+          allowed instanceof RegExp
+            ? allowed.test(origin)
+            : allowed === origin
+        )
+      ) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS denied for origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
