@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Application from "../models/Application";
+import Application, { IDocument } from "../models/Application";
 import { AuthRequest } from "../middleware/auth.middleware";
 
 // @desc    Submit a new application
@@ -10,7 +10,7 @@ export const submitApplication = async (req: Request, res: Response) => {
     const { customerName, phone, serviceId, serviceName, message } = req.body;
 
     // Handle uploaded files
-    const documents = [];
+    const documents: IDocument[] = [];
     if (req.files && Array.isArray(req.files)) {
       req.files.forEach((file: Express.Multer.File) => {
         documents.push({
